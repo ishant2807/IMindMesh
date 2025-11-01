@@ -1,0 +1,58 @@
+🧠 MINDMESH - AI STUDY ASSISTANT
+================================
+
+QUICK START GUIDE
+-----------------
+
+1. INSTALL NODE.JS (if not installed)
+   → Visit: https://nodejs.org/
+   → Download the LTS version
+   → Run installer and follow steps
+   → Restart computer if needed
+
+2. OPEN TERMINAL/COMMAND PROMPT
+   → Windows: Press Win + R, type "powershell", press Enter
+   → Or: Right-click in PROJECT folder → "Open in Terminal"
+
+3. INSTALL DEPENDENCIES
+   → Type: npm install
+   → Press Enter
+   → Wait for installation to complete
+
+4. START THE APP
+   → Type: npm run dev
+   → Press Enter
+   → Browser will open at http://localhost:3000
+
+5. START USING MINDMESH
+   → Click "Add Material" to upload study content
+   → View "Knowledge Mesh" to see topic connections
+   → Use "Flashcards" to review and study
+   → Check "Settings" to configure options
+
+WHAT YOU GET
+------------
+✨ AI-powered text summarization
+✨ Automatic flashcard generation
+✨ Interactive knowledge graph
+✨ Topic relationship visualization
+✨ Study progress tracking
+✨ Export/import your data
+
+NEED HELP?
+----------
+→ Check README.md for detailed documentation
+→ Check INSTALLATION.md for troubleshooting
+→ All your data is stored locally in your browser
+
+IMPORTANT NOTES
+---------------
+• This app works OFFLINE (uses mock AI by default)
+• To use real AI APIs, add your API key in Settings
+• Your data is private - stored only on your computer
+• Export your data regularly for backup
+
+Built with React + TailwindCSS + D3.js
+Made with 💙 for students
+
+Ready to build your knowledge mesh? Let's go! 🚀
