@@ -1,6 +1,6 @@
-import { Brain, LayoutDashboard, Upload, Network, CreditCard, Settings } from 'lucide-react'
+import { Brain, LayoutDashboard, Upload, Network, CreditCard, Settings, LogIn, LogOut, User, Shield } from 'lucide-react'
 
-const Header = ({ activeView, setActiveView }) => {
+const Header = ({ activeView, setActiveView, user, userRole, onLogout }) => {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'upload', label: 'Add Material', icon: Upload },
@@ -27,6 +27,42 @@ const Header = ({ activeView, setActiveView }) => {
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-1">
+            {/* Auth Button */}
+            {!user ? (
+              <button
+                onClick={() => setActiveView('auth')}
+                className="flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-300 text-text-light hover:bg-secondary-light mr-2"
+              >
+                <LogIn className="w-4 h-4" />
+                <span className="text-sm font-medium">Login</span>
+              </button>
+            ) : (
+              <div className="flex items-center space-x-2 mr-2">
+                <div className="flex items-center space-x-2 px-3 py-1 rounded-xl bg-secondary-light">
+                  {userRole === 'admin' ? (
+                    <Shield className="w-4 h-4 text-accent" />
+                  ) : (
+                    <User className="w-4 h-4 text-accent" />
+                  )}
+                  <span className="text-sm font-medium">
+                    {user.email?.split('@')[0]}
+                  </span>
+                  {userRole === 'admin' && (
+                    <span className="text-xs bg-accent text-white px-2 py-0.5 rounded-full">
+                      Admin
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={onLogout}
+                  className="flex items-center space-x-2 px-3 py-2 rounded-xl transition-all duration-300 text-text-light hover:bg-red-500 hover:text-white"
+                  title="Logout"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
             {navItems.map((item) => {
               const Icon = item.icon
               return (

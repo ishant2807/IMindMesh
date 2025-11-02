@@ -6,8 +6,10 @@ import UploadSection from './components/UploadSection'
 import KnowledgeMesh from './components/KnowledgeMesh'
 import Flashcards from './components/Flashcards'
 import Settings from './components/Settings'
+import Auth from './components/Auth'
 import { storageService } from './services/storage'
 import { selectAll } from './services/db'
+import { supabase } from './lib/supabaseClient'
 import TableList from './components/TableList'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'
@@ -18,6 +20,35 @@ function App() {
   const [flashcards, setFlashcards] = useState([])
   const [graphData, setGraphData] = useState({ nodes: [], links: [] })
   const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState(null)
+  const [userRole, setUserRole] = useState(null)
+
+  // Check for existing session on mount
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        // Get user role from profiles table
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role, username')
+          .eq('id', session.user.id)
+          .single()
+        
+        setUser(session.user)
+        setUserRole(profile?.role || 'user')
+        
+        // Store in sessionStorage
+        sessionStorage.setItem('user', JSON.stringify({
+          id: session.user.id,
+          email: session.user.email,
+          role: profile?.role || 'user',
+          username: profile?.username || session.user.email.split('@')[0]
+        }))
+      }
+    }
+    checkSession()
+  }, [])
 
   useEffect(() => {
     // Load data from Supabase and localStorage
@@ -270,6 +301,20 @@ function App() {
     )
   }
 
+  const handleAuthSuccess = (authData) => {
+    setUser(authData.user)
+    setUserRole(authData.role)
+    setActiveView('dashboard')
+  }
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    setUser(null)
+    setUserRole(null)
+    sessionStorage.removeItem('user')
+    setActiveView('auth')
+  }
+
   return (
     <div className="min-h-screen bg-background-light"
     //code added here
@@ -281,9 +326,19 @@ function App() {
         backgroundAttachment: 'fixed',
       }}
     >
-      <Header activeView={activeView} setActiveView={setActiveView} />
+      <Header 
+        activeView={activeView} 
+        setActiveView={setActiveView}
+        user={user}
+        userRole={userRole}
+        onLogout={handleLogout}
+      />
       
       <main className="container mx-auto px-4 py-6 max-w-7xl">
+        {activeView === 'auth' && (
+          <Auth onAuthSuccess={handleAuthSuccess} />
+        )}
+
         {activeView === 'dashboard' && (
           <Dashboard 
             materials={materials}
@@ -312,9 +367,24 @@ function App() {
           />
         )}
         
-        {activeView === 'data' && (
+        {activeView === 'data' && userRole === 'admin' ? (
           <TableList />
-        )}
+        ) : activeView === 'data' ? (
+          <div className="card bg-white/10 backdrop-blur-sm border border-white/20 text-center py-12">
+            <h2 className="text-2xl font-bold text-primary mb-4">🔒 Admin Access Required</h2>
+            <p className="text-text-muted mb-6">
+              Only administrators can access the database viewer.
+            </p>
+            {!user && (
+              <button
+                onClick={() => setActiveView('auth')}
+                className="btn-primary"
+              >
+                Login as Admin
+              </button>
+            )}
+          </div>
+        ) : null}
         
         {activeView === 'settings' && (
           <Settings />
