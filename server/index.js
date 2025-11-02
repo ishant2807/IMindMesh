@@ -14,6 +14,7 @@ app.use(cors({
   origin: [
     'http://localhost:3000',
     'http://localhost:5173',
+    'https://i-mind-mesh-ishant2807s-projects.vercel.app',
     process.env.FRONTEND_URL
   ].filter(Boolean),
   credentials: true
