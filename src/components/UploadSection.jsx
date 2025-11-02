@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Upload, FileText, Type, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
 import { aiService } from '../services/aiService'
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'
+
 const UploadSection = ({ onMaterialAdded }) => {
   const [activeTab, setActiveTab] = useState('text')
   const [textInput, setTextInput] = useState('')
@@ -30,6 +32,7 @@ const UploadSection = ({ onMaterialAdded }) => {
 
     let textToProcess = ''
     let materialTitle = title || 'Untitled Material'
+    let uploadedFile = null
 
     // Validate input
     if (activeTab === 'text') {
@@ -44,6 +47,7 @@ const UploadSection = ({ onMaterialAdded }) => {
         return
       }
       materialTitle = title || file.name.replace('.pdf', '')
+      uploadedFile = file
     }
 
     setProcessing(true)
@@ -54,13 +58,47 @@ const UploadSection = ({ onMaterialAdded }) => {
         textToProcess = await aiService.extractPDFText(file)
       }
 
-      // Process the text with AI
+      // Upload to backend API (Supabase)
+      const formData = new FormData()
+      if (uploadedFile) {
+        formData.append('file', uploadedFile)
+      } else {
+        // Create a text file from pasted text
+        const textBlob = new Blob([textToProcess], { type: 'text/plain' })
+        formData.append('file', textBlob, `${materialTitle}.txt`)
+      }
+      formData.append('title', materialTitle)
+      formData.append('extractText', textToProcess)
+
+      const uploadResponse = await fetch(`${BACKEND_URL}/api/upload`, {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json()
+        throw new Error(errorData.error || 'Upload failed')
+      }
+
+      const uploadResult = await uploadResponse.json()
+      console.log('Upload successful:', uploadResult)
+
+      // Process the text with AI for flashcards and summary
       const processedMaterial = await aiService.processText(textToProcess, materialTitle)
       
-      setResult(processedMaterial)
+      // Combine backend result with AI processing
+      const combinedResult = {
+        ...processedMaterial,
+        id: uploadResult.file.id,
+        fileUrl: uploadResult.file.url,
+        keywords: uploadResult.keywords,
+        backendTopics: uploadResult.topics
+      }
+      
+      setResult(combinedResult)
       
       // Add material to parent component
-      onMaterialAdded(processedMaterial)
+      onMaterialAdded(combinedResult)
 
       // Reset form
       setTimeout(() => {
@@ -70,7 +108,7 @@ const UploadSection = ({ onMaterialAdded }) => {
         setResult(null)
       }, 3000)
     } catch (err) {
-      setError('Failed to process material. Please try again.')
+      setError(err.message || 'Failed to process material. Please try again.')
       console.error('Processing error:', err)
     } finally {
       setProcessing(false)

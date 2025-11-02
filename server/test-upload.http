@@ -1,0 +1,39 @@
+### Health Check
+GET http://localhost:3001/api/health
+
+### Upload File with Keyword Extraction
+POST http://localhost:3001/api/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="title"
+
+Sample Study Material
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="extractText"
+
+Machine learning is a subset of artificial intelligence that focuses on building systems that learn from data. Neural networks are computational models inspired by biological neural networks. Deep learning uses multiple layers of neural networks to process complex patterns. Training involves adjusting weights through backpropagation. Applications include computer vision, natural language processing, and recommendation systems.
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="sample.txt"
+Content-Type: text/plain
+
+Machine learning sample content
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Get Materials
+GET http://localhost:3001/api/data/materials
+
+### Insert Test Material
+POST http://localhost:3001/api/data/materials
+Content-Type: application/json
+
+{
+  "title": "Test Material",
+  "file_name": "test.pdf",
+  "file_url": "https://example.com/test.pdf",
+  "keywords": ["test", "sample"],
+  "topics": [{"name": "Testing", "importance": 1}]
+}
+
+### Delete Material (replace with actual ID)
+DELETE http://localhost:3001/api/data/materials/YOUR_MATERIAL_ID_HERE

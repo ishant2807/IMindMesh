@@ -5,6 +5,7 @@ const Header = ({ activeView, setActiveView }) => {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'upload', label: 'Add Material', icon: Upload },
     { id: 'graph', label: 'Knowledge Mesh', icon: Network },
+    { id: 'data', label: 'Data', icon: Network },
     { id: 'flashcards', label: 'Flashcards', icon: CreditCard },
     { id: 'settings', label: 'Settings', icon: Settings },
   ]

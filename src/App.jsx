@@ -7,6 +7,10 @@ import KnowledgeMesh from './components/KnowledgeMesh'
 import Flashcards from './components/Flashcards'
 import Settings from './components/Settings'
 import { storageService } from './services/storage'
+import { selectAll } from './services/db'
+import TableList from './components/TableList'
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'
 
 function App() {
   const [activeView, setActiveView] = useState('dashboard')
@@ -16,16 +20,58 @@ function App() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Load data from localStorage on mount
+    // Load data from Supabase and localStorage
     const loadData = async () => {
       try {
-        const savedMaterials = await storageService.getMaterials()
-        const savedFlashcards = await storageService.getFlashcards()
-        const savedGraph = await storageService.getGraphData()
+        // Try to load from Supabase first
+        try {
+          const response = await fetch(`${BACKEND_URL}/api/data/materials`)
+          if (response.ok) {
+            const result = await response.json()
+            const supabaseMaterials = result.data || []
+            
+            // Convert Supabase materials to app format
+            const formattedMaterials = supabaseMaterials.map(material => ({
+              id: material.id,
+              title: material.title,
+              content: material.file_url,
+              fileUrl: material.file_url,
+              fileName: material.file_name,
+              keywords: material.keywords || [],
+              topics: material.topics || [],
+              createdAt: material.created_at,
+              summary: {
+                brief: `Material: ${material.title}`,
+                keyPoints: material.keywords || []
+              },
+              flashcards: [] // Will be generated on demand
+            }))
+            
+            setMaterials(formattedMaterials)
+            
+            // Build graph from Supabase materials
+            const graph = buildGraphFromMaterials(formattedMaterials)
+            setGraphData(graph)
+          } else {
+            console.warn('Failed to load from Supabase, falling back to localStorage')
+            throw new Error('Supabase load failed')
+          }
+        } catch (supabaseError) {
+          console.warn('Supabase not available, using localStorage:', supabaseError)
+          // Fallback to localStorage
+          const savedMaterials = await storageService.getMaterials()
+          const savedFlashcards = await storageService.getFlashcards()
+          const savedGraph = await storageService.getGraphData()
+          
+          setMaterials(savedMaterials || [])
+          setFlashcards(savedFlashcards || [])
+          setGraphData(savedGraph || { nodes: [], links: [] })
+        }
         
-        setMaterials(savedMaterials || [])
+        // Always load flashcards from localStorage for now
+        const savedFlashcards = await storageService.getFlashcards()
         setFlashcards(savedFlashcards || [])
-        setGraphData(savedGraph || { nodes: [], links: [] })
+        
       } catch (error) {
         console.error('Error loading data:', error)
       } finally {
@@ -36,23 +82,93 @@ function App() {
     loadData()
   }, [])
 
+  const buildGraphFromMaterials = (materials) => {
+    const nodes = []
+    const links = []
+    const topicMap = new Map()
+    
+    materials.forEach(material => {
+      // Add main material node
+      nodes.push({
+        id: material.id,
+        name: material.title,
+        type: 'main',
+        materialId: material.id
+      })
+      
+      // Add topic nodes from keywords
+      if (material.keywords && Array.isArray(material.keywords)) {
+        material.keywords.forEach((keyword, index) => {
+          const topicId = `${material.id}-topic-${index}`
+          const topicKey = keyword.toLowerCase()
+          
+          // Check if this topic already exists
+          if (!topicMap.has(topicKey)) {
+            topicMap.set(topicKey, topicId)
+            nodes.push({
+              id: topicId,
+              name: keyword,
+              type: 'subtopic',
+              materialId: material.id
+            })
+          }
+          
+          // Link topic to material
+          links.push({
+            source: material.id,
+            target: topicMap.get(topicKey) || topicId,
+            value: 1
+          })
+        })
+      }
+    })
+    
+    return { nodes, links }
+  }
+
   const handleMaterialAdded = async (newMaterial) => {
-    const updatedMaterials = [...materials, newMaterial]
-    setMaterials(updatedMaterials)
-    await storageService.saveMaterials(updatedMaterials)
+    // Reload materials from Supabase to get the latest data
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/data/materials`)
+      if (response.ok) {
+        const result = await response.json()
+        const supabaseMaterials = result.data || []
+        
+        const formattedMaterials = supabaseMaterials.map(material => ({
+          id: material.id,
+          title: material.title,
+          content: material.file_url,
+          fileUrl: material.file_url,
+          fileName: material.file_name,
+          keywords: material.keywords || [],
+          topics: material.topics || [],
+          createdAt: material.created_at,
+          summary: {
+            brief: `Material: ${material.title}`,
+            keyPoints: material.keywords || []
+          },
+          flashcards: []
+        }))
+        
+        setMaterials(formattedMaterials)
+        
+        // Rebuild graph
+        const graph = buildGraphFromMaterials(formattedMaterials)
+        setGraphData(graph)
+      }
+    } catch (error) {
+      console.error('Error reloading materials:', error)
+      // Fallback to localStorage update
+      const updatedMaterials = [...materials, newMaterial]
+      setMaterials(updatedMaterials)
+      await storageService.saveMaterials(updatedMaterials)
+    }
 
     // Update flashcards
     if (newMaterial.flashcards) {
       const updatedFlashcards = [...flashcards, ...newMaterial.flashcards]
       setFlashcards(updatedFlashcards)
       await storageService.saveFlashcards(updatedFlashcards)
-    }
-
-    // Update graph data
-    if (newMaterial.topics) {
-      const updatedGraph = updateGraphData(graphData, newMaterial)
-      setGraphData(updatedGraph)
-      await storageService.saveGraphData(updatedGraph)
     }
   }
 
@@ -194,6 +310,10 @@ function App() {
             flashcards={flashcards}
             materials={materials}
           />
+        )}
+        
+        {activeView === 'data' && (
+          <TableList />
         )}
         
         {activeView === 'settings' && (
