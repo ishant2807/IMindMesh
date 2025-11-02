@@ -127,7 +127,7 @@ const Flashcards = ({ flashcards, materials }) => {
         <div className="relative">
           <div
             onClick={handleFlip}
-            className={`card bg-white/10 backdrop-blur-sm border border-white/20 cursor-pointer transition-all duration-500 transform preserve-3d ${
+            className={`card glow-accent cursor-pointer transition-all duration-500 transform preserve-3d ${
               flipped ? 'rotate-y-180' : ''
             }`}
             style={{

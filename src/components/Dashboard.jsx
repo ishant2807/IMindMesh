@@ -49,8 +49,8 @@ const Dashboard = ({ materials, flashcards, graphData, onDeleteMaterial, onNavig
               <p className="text-text-muted text-sm font-medium mb-1">Flashcards</p>
               <p className="text-3xl font-bold text-primary">{stats.totalFlashcards}</p>
             </div>
-            <div className="bg-secondary/10 rounded-xl p-3 group-hover:bg-secondary transition-all duration-300">
-              <CreditCard className="w-8 h-8 text-secondary group-hover:text-white transition-all duration-300" />
+            <div className="bg-accent/10 rounded-xl p-3 group-hover:bg-accent transition-all duration-300">
+              <CreditCard className="w-8 h-8 text-accent group-hover:text-white transition-all duration-300" />
             </div>
           </div>
         </div>

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import bgImg from '../bgimg.png';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
 import UploadSection from './components/UploadSection';
@@ -8,6 +7,7 @@ import Flashcards from './components/Flashcards';
 import Settings from './components/Settings';
 import Auth from './components/Auth';
 import TableList from './components/TableList';
+import AnimatedBackground from './components/AnimatedBackground';
 import { useAuth } from './contexts/AuthContext';
 import { useData } from './contexts/DataContext';
 import { ROUTES } from './config/routes';
@@ -48,25 +48,21 @@ function App() {
   };
 
   return (
-    <div 
-      className="min-h-screen bg-background-light"
-      style={{
-        backgroundImage: `url(${bgImg})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed',
-      }}
-    >
-      <Header 
-        activeView={activeView} 
-        setActiveView={setActiveView}
-        user={user}
-        userRole={userRole}
-        onLogout={handleLogout}
-      />
+    <div className="min-h-screen relative">
+      {/* Animated Background */}
+      <AnimatedBackground />
       
-      <main className="container mx-auto px-4 py-6 max-w-7xl">
+      {/* Content */}
+      <div className="relative z-10">
+        <Header 
+          activeView={activeView} 
+          setActiveView={setActiveView}
+          user={user}
+          userRole={userRole}
+          onLogout={handleLogout}
+        />
+        
+        <main className="container mx-auto px-4 py-6 max-w-7xl">
         {activeView === ROUTES.AUTH && (
           <Auth onAuthSuccess={handleAuthSuccess} />
         )}
@@ -122,6 +118,7 @@ function App() {
           <Settings />
         )}
       </main>
+      </div>
     </div>
   );
 }
