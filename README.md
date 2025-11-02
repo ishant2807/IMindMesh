@@ -1,10 +1,15 @@
-# 🧠 MindMesh - AI-Powered Study Assistant
+# MindMesh - AI Study Assistant - AI-Powered Study Assistant
 
 An intelligent, context-aware study companion that helps students organize, understand, and interconnect their learning materials through a dynamic **Knowledge Mesh** visualization.
 
-## ✨ Features
+## Features
 
-- 📝 **Multi-Format Input**: Upload PDFs, paste text, or add YouTube transcripts
+- **Multi-Format Input**: Upload PDFs, paste text, or add YouTube transcripts
+- **AI Processing**: Automatic summarization, topic detection, and concept extraction
+- **Smart Flashcards**: AI-generated Q&A pairs for effective studying
+- **Interactive Knowledge Mesh**: Visual graph linking related topics and concepts
+- **Local Storage**: All data saved locally in your browser
+- **Beautiful UI**: Scult.in-inspired modern design with smooth animations
 - 🤖 **AI Processing**: Automatic summarization, topic detection, and concept extraction
 - 🎯 **Smart Flashcards**: AI-generated Q&A pairs for effective studying
 - 📊 **Interactive Knowledge Mesh**: Visual graph linking related topics and concepts
